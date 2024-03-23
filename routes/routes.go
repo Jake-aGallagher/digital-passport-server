@@ -1,11 +1,12 @@
 package routes
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRoutes(server *gin.Engine) {
-
+	server.Use(cors.Default())
 	server.GET("/passports/:companyid")     // view all passports relevant to a company
 	server.GET("/passports/:companyid/:id") // view a single passport
 	server.POST("/passports")               // creating a brand new passport
@@ -18,7 +19,7 @@ func RegisterRoutes(server *gin.Engine) {
 	server.GET("/files/file/:id")
 	server.DELETE("/files/:id")
 
-	server.POST("/signup-company")
+	server.POST("/signup-company", signup)
 	server.POST("/signup-user")
 	server.POST("/login")
 	server.POST("/logout")

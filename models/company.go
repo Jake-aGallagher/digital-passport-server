@@ -8,7 +8,7 @@ import (
 )
 
 type Company struct {
-	Name string
+	CompanyName string
 }
 
 func (c Company) Save() (string, error) {

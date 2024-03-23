@@ -20,7 +20,7 @@ func RegisterRoutes(server *gin.Engine) {
 	server.DELETE("/files/:id")
 
 	server.POST("/signup-company", signup)
-	server.POST("/signup-user")
+	server.POST("/signup-user", signupUser)
 	server.POST("/login")
 	server.POST("/logout")
 }

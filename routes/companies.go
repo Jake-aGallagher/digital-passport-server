@@ -28,16 +28,21 @@ func signup(context *gin.Context) {
 		return
 	}
 
-	companyId, err := company.Save()
-	if err != nil {
-		context.JSON(500, gin.H{"message": "Could not save company"})
-		return
-	}
-
 	var user models.User
 	err = json.Unmarshal(requestJSON, &user)
 	if err != nil {
 		context.JSON(400, gin.H{"error": "Could not parse user request data"})
+		return
+	}
+
+	if company.CompanyName == "" || user.Username == "" || user.Email == "" || user.Password == "" {
+		context.JSON(500, gin.H{"message": "fields missing"})
+		return
+	}
+
+	companyId, err := company.Save()
+	if err != nil {
+		context.JSON(500, gin.H{"message": "Could not save company"})
 		return
 	}
 

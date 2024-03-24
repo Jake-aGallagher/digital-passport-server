@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"example.com/digital-passport/models"
+	"example.com/digital-passport/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -53,5 +54,11 @@ func signup(context *gin.Context) {
 		return
 	}
 
-	context.JSON(201, gin.H{"message": "user created successfully", "companyId": companyId, "userId": userId})
+	token, err := utils.GenerateToken(companyId, userId)
+	if err != nil {
+		context.JSON(500, gin.H{"message": "Could not authenticate user"})
+		return
+	}
+
+	context.JSON(201, gin.H{"message": "user created successfully", "companyId": companyId, "userId": userId, "token": token})
 }

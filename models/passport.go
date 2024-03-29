@@ -2,28 +2,34 @@ package models
 
 import (
 	"fmt"
+	"time"
 
 	"example.com/digital-passport/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Passport struct {
-	CompanyId    string
-	PassportId   string
-	PassportName string
-	Files        []string
-	Locked       bool
+	PassportId   primitive.ObjectID `bson:"_id,omitempty" json:"passportId"`
+	CompanyId    string             `bson:"company_id" json:"companyId"`
+	Created      time.Time          `bson:"created" json:"created"`
+	PassportName string             `bson:"passport_name" json:"passportName"`
+	Files        []string           `bson:"files" json:"files"`
+	Locked       bool               `bson:"locked" json:"locked"`
 }
 
 func GetPassportsForCompany(companyId string) ([]Passport, error) {
 	var passports = []Passport{}
-	filter := bson.D{{Key: "companyId", Value: companyId}}
-	results, err := db.DB.Collection("passports").Find(db.DBctx, filter)
+	filter := bson.D{{Key: "company_id", Value: companyId}}
+	find := options.Find()
+	find.SetSort(bson.M{"created": -1})
+	results, err := db.DB.Collection("passports").Find(db.DBctx, filter, find)
 	if err != nil {
 		fmt.Println("err: ", err)
 		return []Passport{}, err
 	}
+	//utils.LogMongo(results)
 
 	for results.Next(db.DBctx) {
 		var p Passport
@@ -37,11 +43,34 @@ func GetPassportsForCompany(companyId string) ([]Passport, error) {
 	return passports, nil
 }
 
-func (p Passport) Save() (string, error) {
-	res, err := db.DB.Collection("passports").InsertOne(db.DBctx, p)
+func GetPassportById(companyId, passportId string) (Passport, error) {
+	var passport Passport
+	objId, err := primitive.ObjectIDFromHex(passportId)
 	if err != nil {
+		return passport, err
+	}
+	filter := bson.D{{Key: "company_id", Value: companyId}, {Key: "_id", Value: objId}}
+	err = db.DB.Collection("passports").FindOne(db.DBctx, filter).Decode(&passport)
+	return passport, err
+}
+
+func (p Passport) Save() (string, error) {
+	if p.PassportId == primitive.NilObjectID {
+		p.PassportId = primitive.NewObjectID()
+	}
+	filter := bson.D{{Key: "_id", Value: p.PassportId}}
+	update := bson.D{{Key: "$set", Value: p}}
+	opts := options.Update().SetUpsert(true)
+	result, err := db.DB.Collection("passports").UpdateOne(db.DBctx, filter, update, opts)
+	if err != nil {
+		fmt.Println("some err: ", err)
 		return "", err
 	}
-	fmt.Println("Inserted a single document from a struct: ", res.InsertedID)
-	return res.InsertedID.(primitive.ObjectID).Hex(), nil
+	var res string
+	if oldId, ok := result.UpsertedID.(primitive.ObjectID); ok {
+		res = oldId.Hex()
+	} else {
+		res = p.PassportId.Hex()
+	}
+	return res, nil
 }

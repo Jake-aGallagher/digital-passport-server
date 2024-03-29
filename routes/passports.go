@@ -47,16 +47,20 @@ func addEditPassport(context *gin.Context) {
 	}
 
 	var passport models.Passport
+	passport.CompanyId = companyId.(string)
+	passport.Files = []string{"1234"}
+	passport.Locked = false
+	passport.Created = time.Now()
 	err := context.ShouldBindJSON(&passport)
 	if err != nil {
 		fmt.Println("some err: ", err)
 		context.JSON(400, gin.H{"message": "Could not parse request data"})
 		return
 	}
-	passport.CompanyId = companyId.(string)
-	passport.Files = []string{"1234"}
-	passport.Locked = false
-	passport.Created = time.Now()
+	if passport.Locked {
+		context.JSON(400, gin.H{"message": "passport is locked"})
+		return
+	}
 
 	_, err = passport.Save()
 	if err != nil {

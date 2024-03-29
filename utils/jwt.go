@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func GenerateToken(userId string, companyId string) (string, error) {
+func GenerateToken(companyId string, userId string) (string, error) {
 	var err = godotenv.Load(".env")
 
 	if err != nil {

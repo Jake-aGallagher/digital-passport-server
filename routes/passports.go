@@ -70,7 +70,7 @@ func addEditPassport(context *gin.Context) {
 	}
 
 	if passport.Locked {
-		list, err := diceware.Generate(6)
+		list, err := diceware.Generate(4)
 		if err != nil {
 			context.JSON(500, gin.H{"message": "unable to generate passcode"})
 			return

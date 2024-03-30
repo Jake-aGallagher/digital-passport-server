@@ -2,10 +2,13 @@ package routes
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"example.com/digital-passport/models"
 	"github.com/gin-gonic/gin"
+	"github.com/sethvargo/go-diceware/diceware"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func getPassports(context *gin.Context) {
@@ -57,15 +60,28 @@ func addEditPassport(context *gin.Context) {
 		context.JSON(400, gin.H{"message": "Could not parse request data"})
 		return
 	}
+
+	if passport.PassportId != primitive.NilObjectID {
+		foundPassport, err := models.GetPassportById(passport.CompanyId, passport.PassportId.Hex())
+		if err != nil || foundPassport.Locked {
+			context.JSON(500, gin.H{"message": "passport already locked"})
+			return
+		}
+	}
+
 	if passport.Locked {
-		context.JSON(400, gin.H{"message": "passport is locked"})
-		return
+		list, err := diceware.Generate(6)
+		if err != nil {
+			context.JSON(500, gin.H{"message": "unable to generate passcode"})
+			return
+		}
+		passport.UseCode = strings.Join(list, "-")
 	}
 
 	_, err = passport.Save()
 	if err != nil {
-		context.JSON(400, gin.H{"message": "Could not create passport"})
+		context.JSON(400, gin.H{"message": "Could not save passport"})
 		return
 	}
-	context.JSON(200, gin.H{"message": "passports saved successfully"})
+	context.JSON(200, gin.H{"message": "passport saved successfully"})
 }

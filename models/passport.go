@@ -18,6 +18,7 @@ type Passport struct {
 	Files        []string           `bson:"files" json:"files"`
 	Locked       bool               `bson:"locked" json:"locked"`
 	UseCode      string             `bson:"use_code" json:"useCode"`
+	LinkedArr    []string           `bson:"linked_arr" json:"linkedArr"`
 }
 
 func GetPassportsForCompany(companyId string) ([]Passport, error) {

@@ -13,9 +13,9 @@ func RegisterRoutes(server *gin.Engine) {
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	server.Use(cors.New(config))
 
-	server.GET("/passports/:companyid", middlewares.Authenticate, getPassports)    // view all passports relevant to a company
-	server.GET("/passports/:companyid/:id", middlewares.Authenticate, getPassport) // view a single passport
-	server.POST("/passports", middlewares.Authenticate, addPassport)               // creating a brand new passport
+	server.GET("/passports/:companyid", middlewares.Authenticate, getPassports)  // view all passports relevant to a company
+	server.GET("/passports/passport/:id", middlewares.Authenticate, getPassport) // view a single passport
+	server.POST("/passports", middlewares.Authenticate, addPassport)             // creating a brand new passport
 	server.PUT("/passports/:id", middlewares.Authenticate, editPassport)
 	server.POST("/passport-stages", middlewares.Authenticate)      // adding a new stage to the passport
 	server.PUT("/passport-stages/:id", middlewares.Authenticate)   // updating a stage to the passport

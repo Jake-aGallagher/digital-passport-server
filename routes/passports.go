@@ -27,18 +27,27 @@ func getPassports(context *gin.Context) {
 }
 
 func getPassport(context *gin.Context) {
-	companyId := context.Param("companyid")
 	passportId := context.Param("id")
-	if companyId == "" || passportId == "" {
+	if passportId == "" {
 		context.JSON(400, gin.H{"message": "Could not parse request"})
 		return
 	}
-	passport, err := models.GetPassportById(companyId, passportId)
+	passport, err := models.GetPassportById(passportId)
 	if err != nil {
 		context.JSON(500, gin.H{"message": "error retrieving passport"})
 		return
 	}
-	context.JSON(200, gin.H{"message": "passport retrieved successfully", "passport": passport})
+
+	var linked map[string]string
+	if len(passport.LinkedArr) > 0 {
+		linked, err = models.GetLinkedMap(passport.LinkedArr)
+		if err != nil {
+			context.JSON(500, gin.H{"message": "error retrieving linked passport"})
+			return
+		}
+	}
+
+	context.JSON(200, gin.H{"message": "passport retrieved successfully", "passport": passport, "linked": linked})
 }
 
 func addPassport(context *gin.Context) {
@@ -78,19 +87,13 @@ func addPassport(context *gin.Context) {
 }
 
 func editPassport(context *gin.Context) {
-	companyId, exists := context.Get("companyId")
-	if !exists {
-		context.JSON(400, gin.H{"message": "error retrieving company id"})
-		return
-	}
-
 	passportId := context.Param("id")
 	if passportId == "" {
 		context.JSON(400, gin.H{"message": "Could not parse passport id"})
 		return
 	}
 
-	foundPassport, err := models.GetPassportById(companyId.(string), passportId)
+	foundPassport, err := models.GetPassportById(passportId)
 	if err != nil || foundPassport.Locked {
 		context.JSON(500, gin.H{"message": "passport already locked"})
 		return

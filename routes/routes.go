@@ -15,16 +15,13 @@ func RegisterRoutes(server *gin.Engine) {
 
 	server.GET("/passports/:companyid", middlewares.Authenticate, getPassports)  // view all passports relevant to a company
 	server.GET("/passports/passport/:id", middlewares.Authenticate, getPassport) // view a single passport
-	server.POST("/passports", middlewares.Authenticate, addPassport)             // creating a brand new passport
-	server.PUT("/passports/:id", middlewares.Authenticate, editPassport)
-	server.POST("/passport-stages", middlewares.Authenticate)      // adding a new stage to the passport
-	server.PUT("/passport-stages/:id", middlewares.Authenticate)   // updating a stage to the passport
-	server.DELETE("passport-stages/:id", middlewares.Authenticate) // deleting a stage, only if no stages after this one
+	server.POST("/passports", middlewares.Authenticate, addPassport)             // creating a brand new passport / stage
+	server.PUT("/passports/:id", middlewares.Authenticate, editPassport)         // editing a passport stage
+	server.DELETE("passport-stages/:id", middlewares.Authenticate)               // deleting an unlocked stage
 
-	server.POST("/files")
-	server.GET("/files/passport/:id")
-	server.GET("/files/file/:id")
-	server.DELETE("/files/:id")
+	server.POST("/files", middlewares.Authenticate, addFile)    // adding a file to a passport stage
+	server.GET("/files/:id", middlewares.Authenticate, getFile) // getting an individual file for downloading
+	server.DELETE("/files/:id")                                 // deleting an individual file
 
 	server.POST("/signup-company", signup)
 	server.POST("/signup-user", signupUser)
